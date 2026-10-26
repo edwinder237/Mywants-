@@ -1,78 +1,143 @@
-# My Wants — Project Brief (v1 / MVP)
+# My Wants — Project Specification
 
-> **Note:** No `PROJECT.md` existed in the repository when the MVP was built.
-> This file records the brief the MVP was built against, assembled from the
-> build instructions. The **Assumptions** section lists every decision the
-> brief left open. Edit this file if the product intent differs.
+Version: 0.1 (MVP) | Owner: Lumeve Technologies | Status: Proposed
 
-## Product
+## 1. Product vision
 
-My Wants is a personal, mobile-first app for tracking discretionary purchases
-("wants"). Each want is gated by **exactly three dependencies**: things the
-owner commits to finishing first. A want **unlocks** only when all three are
-complete. Only an unlocked want can be marked **purchased**.
+My Wants is a mobile-first, private wishlist that turns discretionary purchases into earned rewards.
+Tagline: Want it. Earn it. Enjoy it.
 
-Unlocking is a commitment device, **not** a judgment that the purchase is
-affordable. The app must never present an unlock as proof of affordability.
+The product is intentionally not a budget tracker, debt management service, or shopping marketplace.
+A user creates a want and must complete exactly three user-defined dependencies before the want is unlocked. Unlocking is permission to reconsider buying, not an instruction or guarantee that the purchase is affordable.
 
-## Constraints
+## 2. MVP constraints
 
-- No extra monthly infrastructure cost. No cloud backend, Firebase, API keys,
-  accounts, or paid services in v1.
-- Next.js App Router + TypeScript + Tailwind CSS + shadcn/ui.
-- Local-first: data lives in IndexedDB on the device.
-- JSON export and import for backup and moving devices.
-- Installable PWA. Works offline after the first load.
-- Excellent on iPhone (safe areas, touch targets, standalone display).
-- Lean architecture: no Docker, microservices, or extra abstraction layers.
+- Zero additional monthly infrastructure costs for local development and initial testing.
+- No Firebase, paid APIs, external database, AI integration, analytics SDK, or account system in v1.
+- Mobile-first responsive PWA, installable on iPhone where supported.
+- Works offline after initial load.
+- Store data locally in browser IndexedDB (use a small, maintained wrapper such as idb); no server-side persistence.
+- Private GitHub repository; never commit credentials or personal financial details.
+- Clean, calm, polished interface; avoid shaming, guilt, excessive gamification, or dark patterns.
+- Do not overengineer: single Next.js app, no microservices, Docker, Redis, or background jobs.
 
-## Functional requirements
+## 3. Core user journey
 
-1. **Create a want** with a title, a price (amount + currency, default CAD),
-   and exactly three dependencies, all required. An optional link and note.
-2. **Edit a want**: title, price, link, note, and dependency wording.
-3. **Toggle a dependency** complete or incomplete.
-4. **Derived unlock state**: unlocked = all three dependencies complete. Never
-   stored as its own field.
-5. **Mark purchased**: allowed only when unlocked, behind a confirmation that
-   says the unlock does not mean the purchase is affordable.
-6. **Delete a want**, with confirmation.
-7. **Views**: Locked (in progress), Unlocked (ready), Purchased.
-8. **Clear 3-step progress** on every want (0/3 → 3/3).
-9. **Export** all data to a JSON file. **Import** a JSON file with strict
-   validation; invalid files are rejected with a readable error and nothing is
-   changed.
-10. **Empty state** with a one-tap sample want: *Lagavulin 16*, CAD 143.84,
-    clearly marked **Sample** and removable.
+1. Open dashboard and see active, unlocked, and purchased wants.
+2. Add a want: name, price, currency (CAD default), optional image, notes/reason, and category.
+3. Set exactly three meaningful dependencies; each has a title, optional description, and completion checkbox.
+4. Track progress (0/3, 1/3, 2/3, 3/3).
+5. Automatically unlock only when all three are complete.
+6. At unlock, ask: Do you still want it? and Can you comfortably afford it without adding unwanted debt? The user can defer, archive, or mark purchased.
+7. View completed purchases and archived wants.
 
-## Acceptance criteria
+## 4. MVP features
 
-- A want with fewer or more than three dependencies cannot be created,
-  saved, or imported.
-- A want cannot be marked purchased unless all three dependencies are done.
-- Unchecking a dependency on an unlocked (not purchased) want locks it again.
-- A purchased want's dependencies are frozen.
-- Data survives a page reload and an app restart.
-- Export → import round-trips with no loss.
-- Import rejects malformed JSON, wrong shapes, duplicate IDs, and purchased
-  wants with incomplete dependencies.
-- The app loads and works offline after the first visit.
-- No horizontal scroll at iPhone widths (375–430 px). Touch targets ≥ 44 px.
-- Lint, typecheck, unit tests, and production build pass.
+### Required
 
-## Assumptions (brief left these open)
+- Dashboard with filters: Locked, Unlocked, Purchased, Archived.
+- Add, view, edit, archive, and delete a want (delete with confirmation).
+- Exactly three editable dependencies per want; check/uncheck each.
+- Derived unlock status: all three complete; unchecking relocks unless already purchased.
+- Manual ‘Mark purchased’ action only for unlocked wants; optional purchase date and final price.
+- Purchase decision confirmation (no payment processing).
+- Local persistence, offline support, empty states, loading states, basic accessibility.
+- Export/import all data as JSON with schema validation and clear merge/replace options.
+- Optional image stored locally, resized/compressed to avoid storage bloat; graceful handling of storage quota.
+- Currency display in CAD by default; store monetary values in integer cents.
+- Light/dark theme and responsive design.
 
-- **Import replaces** all current data, after a confirmation. No merging.
-- **Purchase is final** in v1. There is no "undo purchase"; delete the want
-  instead. Dependencies freeze on purchase.
-- **Editing dependency wording keeps its completion state.**
-- **Currency** is per want (ISO 4217 code), default CAD. No conversion.
-- **Price is stored as integer minor units** (cents) to avoid float errors.
-- **One screen** with sheets/dialogs. No routing needed.
-- **Static export** (`output: "export"`) so the app can be hosted free on any
-  static host. A hand-written service worker gives offline support.
+### Later, not MVP
 
-## Out of scope for v1
+- Cloud sync and authentication (potentially Firebase Firestore/Auth).
+- AI-suggested dependencies.
+- Price monitoring, shopping links, notifications, social sharing, bank connections.
+- Integration with Marc OS or other Lumeve services.
 
-Accounts, sync, sharing, notifications, budgets, price tracking, images,
-categories, reminders, analytics.
+## 5. Design direction
+
+- Brand: my wants. — elegant and friendly, minimalist, premium but playful.
+- Main screen: compact summary and visually appealing want cards.
+- Each card: image/placeholder, item name, price, 3-step progress, lock state, one primary action.
+- Clear accessibility labels, keyboard navigation, touch targets >=44px, WCAG AA contrast where practical.
+- Delightful but restrained unlock animation; respect reduced-motion preference.
+- Avoid presenting fictional sample data as real user data. Include an optional demo item:
+  Lagavulin 16, CAD 143.84 (example only; user can delete).
+  Example dependencies: pay off one credit card, save CAD 145, stay within spending plan 30 days.
+
+## 6. Data model (TypeScript)
+
+```ts
+type Dependency = {
+  id: string;
+  title: string;
+  description?: string;
+  completed: boolean;
+  completedAt?: string;
+};
+
+type Want = {
+  id: string;
+  name: string;
+  priceCents: number;
+  currency: "CAD"; // v1
+  category?: string;
+  reason?: string;
+  imageData?: string; // local compressed image, or store Blob separately
+  dependencies: [Dependency, Dependency, Dependency];
+  createdAt: string;
+  updatedAt: string;
+  archivedAt?: string;
+  purchasedAt?: string;
+  finalPriceCents?: number;
+};
+```
+
+Derived state precedence: Purchased > Archived > Unlocked (3/3) > Locked. Do not persist a second independent unlocked flag.
+
+## 7. Technical stack
+
+- Next.js (App Router) + TypeScript
+- Tailwind CSS + shadcn/ui components
+- IndexedDB via idb or Dexie, with a small repository interface for future storage migration
+- PWA manifest and offline caching using a maintained Next.js-compatible approach
+- Vitest + React Testing Library for unit/component tests; Playwright smoke tests if lightweight
+- npm or pnpm, whichever is already available in the environment
+- Static-first architecture; no paid server services
+- Hosting is optional for MVP. If published, choose a free-tier static hosting option compatible with the built output and check current plan limits.
+
+## 8. Acceptance criteria
+
+- Can create a want with exactly three dependencies; cannot save with fewer/more.
+- Data persists after refresh and browser restart on the same device.
+- Checking 3/3 unlocks; unchecking relocks an unpurchased want.
+- Cannot mark a locked want purchased.
+- User can edit price/dependencies, archive, restore, delete.
+- Import rejects malformed JSON without destroying existing data.
+- Export/import round-trip preserves valid wants.
+- Offline reopening works after successful installation/initial caching.
+- Mobile layout usable at 375px width; desktop also works.
+- No cloud services, API keys, telemetry, or monthly infrastructure charges required.
+- README documents setup, local data limitations, backups, and future cloud-sync path.
+
+## 9. Important limitations
+
+- Local-only data does not synchronize between iPhone and MacBook.
+- Clearing browser/site data or switching devices can lose data unless exported.
+- iOS browser storage may be evicted; do not imply it is permanent.
+- Local storage is not a secure vault for sensitive financial data; do not collect account numbers or credentials.
+- PWA offline behavior must be tested on a real iPhone; do not promise identical behavior across browsers.
+
+## 10. Build order
+
+1. Scaffold and design system.
+2. Data model + repository + validation.
+3. Dashboard, create/edit want, dependencies and unlock flow.
+4. Purchase/archiving workflow.
+5. IndexedDB persistence, export/import.
+6. PWA/offline support.
+7. Tests, polish, README, manual QA.
+
+## 11. Definition of done
+
+A person can install/open My Wants on their phone, add a want with exactly three dependencies, complete milestones, unlock and optionally mark purchased, and retain/export the data—all without an account or paid backend.

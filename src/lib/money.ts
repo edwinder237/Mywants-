@@ -1,27 +1,18 @@
-export const DEFAULT_CURRENCY = "CAD";
+import { CURRENCY } from "./wants";
 
-// Two-decimal currencies only: prices are stored in hundredths.
-export const CURRENCIES = ["CAD", "USD", "EUR", "GBP", "AUD", "CHF", "MXN"] as const;
+const formatter = new Intl.NumberFormat("en-CA", { style: "currency", currency: CURRENCY });
 
-/** Display a price stored in minor units, e.g. 14384 CAD → "$143.84". */
-export function formatPrice(cents: number, currency: string): string {
-  try {
-    return new Intl.NumberFormat("en-CA", {
-      style: "currency",
-      currency,
-      currencyDisplay: "narrowSymbol",
-    }).format(cents / 100);
-  } catch {
-    return `${(cents / 100).toFixed(2)} ${currency}`;
-  }
+/** Display integer cents as CAD, e.g. 14384 → "$143.84". */
+export function formatPrice(cents: number): string {
+  return formatter.format(cents / 100);
 }
 
 /**
- * Parse user-typed price text into cents. Accepts "143.84", "$143.84",
+ * Parse user-typed price text into integer cents. Accepts "143.84", "$143.84",
  * "1,299.00", "143,84" (comma decimal). Returns null when invalid.
  */
 export function parsePriceToCents(raw: string): number | null {
-  let text = raw.trim().replace(/[\s$€£¥]/g, "");
+  let text = raw.trim().replace(/[\s$]/g, "").replace(/^CAD/i, "").replace(/CAD$/i, "");
   if (text === "") return null;
   // A lone comma followed by 1–2 digits at the end is a decimal separator.
   if (!text.includes(".") && /,\d{1,2}$/.test(text)) {

@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { DropdownMenu as DropdownMenuPrimitive } from "radix-ui";
+import { CheckIcon } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 
@@ -44,7 +45,7 @@ function DropdownMenuItem({
       data-slot="dropdown-menu-item"
       data-variant={variant}
       className={cn(
-        "relative flex min-h-11 cursor-default items-center gap-3 rounded-xl px-3 text-[15px] outline-none select-none focus:bg-accent data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:size-4 [&_svg]:text-muted-foreground",
+        "relative flex min-h-11 cursor-default items-center gap-3 rounded-xl px-3 text-[15px] outline-none select-none focus:bg-accent focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:size-4 [&_svg]:text-muted-foreground",
         "data-[variant=destructive]:text-destructive data-[variant=destructive]:[&_svg]:text-destructive",
         className,
       )}
@@ -66,8 +67,38 @@ function DropdownMenuLabel({ className, ...props }: React.ComponentProps<typeof 
   );
 }
 
+function DropdownMenuRadioGroup(props: React.ComponentProps<typeof DropdownMenuPrimitive.RadioGroup>) {
+  return <DropdownMenuPrimitive.RadioGroup data-slot="dropdown-menu-radio-group" {...props} />;
+}
+
+function DropdownMenuRadioItem({
+  className,
+  children,
+  ...props
+}: React.ComponentProps<typeof DropdownMenuPrimitive.RadioItem>) {
+  return (
+    <DropdownMenuPrimitive.RadioItem
+      data-slot="dropdown-menu-radio-item"
+      className={cn(
+        "relative flex min-h-11 cursor-default items-center gap-3 rounded-xl py-0 pr-3 pl-9 text-[15px] outline-none select-none focus:bg-accent focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring data-disabled:pointer-events-none data-disabled:opacity-50",
+        className,
+      )}
+      {...props}
+    >
+      <span className="pointer-events-none absolute left-3 flex size-4 items-center justify-center">
+        <DropdownMenuPrimitive.ItemIndicator>
+          <CheckIcon className="size-4" />
+        </DropdownMenuPrimitive.ItemIndicator>
+      </span>
+      {children}
+    </DropdownMenuPrimitive.RadioItem>
+  );
+}
+
 export {
   DropdownMenu,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,

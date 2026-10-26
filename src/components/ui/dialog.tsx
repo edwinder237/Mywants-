@@ -56,12 +56,11 @@ function DialogContent({
         )}
         {...props}
       >
-        <div aria-hidden className="mx-auto -mt-3 mb-1 h-1.5 w-10 shrink-0 rounded-full bg-muted-foreground/25 sm:hidden" />
         {children}
         {showCloseButton && (
           <DialogPrimitive.Close
             data-slot="dialog-close"
-            className="absolute top-4 right-4 flex size-11 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-accent focus-visible:ring-[3px] focus-visible:ring-ring/40 outline-none"
+            className="absolute top-4 right-4 flex size-11 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring outline-none"
           >
             <XIcon className="size-5" />
             <span className="sr-only">Close</span>

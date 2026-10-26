@@ -4,14 +4,13 @@ export const dynamic = "force-static";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "My Wants",
-    short_name: "My Wants",
-    description: "Track the things you want. Each one unlocks after three dependencies are done.",
+    name: "my wants.",
+    short_name: "my wants.",
+    description: "Want it. Earn it. Enjoy it. A private wishlist where each want unlocks after three things you choose.",
     id: "/",
     start_url: "/",
     scope: "/",
     display: "standalone",
-    orientation: "portrait",
     background_color: "#f9f6f1",
     theme_color: "#f9f6f1",
     icons: [
